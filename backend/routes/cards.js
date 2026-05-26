@@ -224,7 +224,7 @@ router.post('/:id/comments', protect, async (req, res) => {
           // Don't notify the commenter themselves
           if (String(mentionedUser._id) === String(req.user._id)) continue;
 
-          await Notification.create({
+          const note = await Notification.create({
             user: mentionedUser._id,
             type: 'mention',
             data: {
@@ -234,6 +234,16 @@ router.post('/:id/comments', protect, async (req, res) => {
               from: req.user._id
             }
           });
+
+          // Emit real-time notification if user connected via Socket.IO
+          try {
+            const socketId = global.connectedSockets && global.connectedSockets.get(String(mentionedUser._id));
+            if (socketId && global.io) {
+              global.io.to(socketId).emit('notification', note);
+            }
+          } catch (emitErr) {
+            console.error('Socket emit error', emitErr);
+          }
         }
       }
     } catch (ign) {
