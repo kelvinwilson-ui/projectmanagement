@@ -1,0 +1,7 @@
+{
+  "name": "projectmanagement",
+  "private": true,
+  "scripts": {
+    "smoke:test": "bash scripts/smoke-test.sh"
+  }
+}

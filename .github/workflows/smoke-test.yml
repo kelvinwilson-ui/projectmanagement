@@ -1,0 +1,35 @@
+name: Smoke Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install backend dependencies
+        run: npm install --prefix backend
+
+      - name: Install frontend dependencies
+        run: npm install --prefix frontend --legacy-peer-deps
+
+      - name: Start backend
+        run: node backend/server.js &
+
+      - name: Start frontend
+        run: npm --prefix frontend run dev &
+
+      - name: Wait for services
+        run: npx wait-on http://localhost:5000/api/health http://localhost:5175/
+
+      - name: Run smoke tests
+        run: bash scripts/smoke-test.sh
