@@ -47,6 +47,13 @@ export default function NotificationBell() {
     } catch (e) {}
   };
 
+  const markAllRead = async () => {
+    try {
+      await axios.put(`${API_BASE}/notifications/read-all`, {}, { headers: { Authorization: `Bearer ${userToken}` } });
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    } catch (e) {}
+  };
+
   return (
     <div style={{ position: 'relative' }}>
       <button onClick={() => setOpen(!open)} style={{ position: 'relative', padding: 8, background: 'transparent', border: 'none', color: 'white', cursor: 'pointer' }} title="Notifications">
@@ -57,7 +64,10 @@ export default function NotificationBell() {
       </button>
       {open && (
         <div style={{ position: 'absolute', right: 0, top: '36px', width: 320, maxHeight: 360, overflowY: 'auto', background: 'white', color: '#333', boxShadow: '0 6px 18px rgba(0,0,0,0.2)', borderRadius: 6, zIndex: 40 }}>
-          <div style={{ padding: 10, borderBottom: '1px solid #eee', fontWeight: 'bold' }}>Notifications</div>
+          <div style={{ padding: 10, borderBottom: '1px solid #eee', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>Notifications</span>
+            <button onClick={markAllRead} style={{ fontSize: 12, padding: '6px 8px' }}>Mark all read</button>
+          </div>
           {notifications.length === 0 && <div style={{ padding: 10 }}>No notifications</div>}
           {notifications.map(n => (
             <div key={n._id} style={{ padding: 10, borderBottom: '1px solid #f5f5f5', background: n.read ? 'white' : '#f9fbff' }}>
