@@ -2,6 +2,8 @@ import express from 'express';
 import Card from '../models/Card.js';
 import Column from '../models/Column.js';
 import Board from '../models/Board.js';
+import User from '../models/User.js';
+import Notification from '../models/Notification.js';
 import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -202,6 +204,43 @@ router.post('/:id/comments', protect, async (req, res) => {
     .populate('assignee', 'name email')
     .populate('comments.user', 'name email');
     
+    // Detect mentions in comment text (email mentions like @user@example.com)
+    try {
+      const mentionRegex = /@([\w.%+-]+@[\w.-]+\.[A-Za-z]{2,})/g;
+      const mentions = new Set();
+      let m;
+      while ((m = mentionRegex.exec(text || '')) !== null) {
+        mentions.add(m[1].toLowerCase());
+      }
+
+      if (mentions.size > 0) {
+        const cardObj = await Card.findById(req.params.id);
+        const column = await Column.findById(cardObj.columnId);
+        const board = column ? await Board.findById(column.boardId) : null;
+
+        for (const email of mentions) {
+          const mentionedUser = await User.findOne({ email });
+          if (!mentionedUser) continue;
+          // Don't notify the commenter themselves
+          if (String(mentionedUser._id) === String(req.user._id)) continue;
+
+          await Notification.create({
+            user: mentionedUser._id,
+            type: 'mention',
+            data: {
+              cardId: req.params.id,
+              boardId: board ? String(board._id) : null,
+              text,
+              from: req.user._id
+            }
+          });
+        }
+      }
+    } catch (ign) {
+      // non-fatal; continue
+      console.error('Mention processing error', ign);
+    }
+
     res.json(updatedCard);
   } catch (err) {
     res.status(400).json({ message: err.message });
