@@ -7,6 +7,9 @@ on:
 jobs:
   smoke:
     runs-on: ubuntu-latest
+    env:
+      BACKEND_URL: http://localhost:5000
+      FRONTEND_URL: http://localhost:5173
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -17,19 +20,44 @@ jobs:
           node-version: '18'
 
       - name: Install backend dependencies
-        run: npm install --prefix backend
+        run: npm ci --prefix backend
 
       - name: Install frontend dependencies
-        run: npm install --prefix frontend --legacy-peer-deps
+        run: npm ci --prefix frontend --legacy-peer-deps
 
       - name: Start backend
-        run: node backend/server.js &
+        run: node backend/server.js > /tmp/backend.log 2>&1 &
 
       - name: Start frontend
-        run: npm --prefix frontend run dev &
+        run: npm --prefix frontend run dev -- --port 5173 > /tmp/frontend.log 2>&1 &
 
       - name: Wait for services
-        run: npx wait-on http://localhost:5000/api/health http://localhost:5175/
+        run: |
+          for i in {1..60}; do
+            backend_ok=0
+            frontend_ok=0
+            curl -fsS "${BACKEND_URL}/api/health" >/dev/null && backend_ok=1 || true
+            curl -fsS "${FRONTEND_URL}/" >/dev/null && frontend_ok=1 || true
+            if [ "$backend_ok" -eq 1 ] && [ "$frontend_ok" -eq 1 ]; then
+              echo "Services are up"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Service startup timed out"
+          echo "--- backend log ---"
+          cat /tmp/backend.log || true
+          echo "--- frontend log ---"
+          cat /tmp/frontend.log || true
+          exit 1
 
       - name: Run smoke tests
         run: bash scripts/smoke-test.sh
+
+      - name: Show service logs on failure
+        if: failure()
+        run: |
+          echo "--- backend log ---"
+          cat /tmp/backend.log || true
+          echo "--- frontend log ---"
+          cat /tmp/frontend.log || true
