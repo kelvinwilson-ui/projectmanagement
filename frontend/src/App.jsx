@@ -5,6 +5,7 @@ import Board from './components/Board';
 import Dashboard from './components/Dashboard';
 import Auth from './components/Auth';
 import AdminPanel from './components/AdminPanel';
+import Profile from './components/Profile';
 import CompleteSetup from './components/CompleteSetup';
 import { logout } from './store/authSlice';
 import NotificationBell from './components/NotificationBell';
@@ -23,18 +24,24 @@ function App() {
 
   return (
     <Router>
-      <div style={{ fontFamily: 'sans-serif', height: '100vh', display: 'flex', flexDirection: 'column' }}>
-        <header style={{ padding: '10px 20px', backgroundColor: '#026aa7', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="pm-shell" style={{ fontFamily: 'sans-serif', height: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <header className="pm-header" style={{ padding: '10px 20px', backgroundColor: '#026aa7', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h1 style={{ margin: 0, fontSize: '1.5rem' }}>
-            <Link to="/" style={{ color: 'white', textDecoration: 'none' }}>Project Management Tool</Link>
+            <Link to="/" style={{ color: 'white', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <img src="/teampilot-logo.png" alt="TeamPilot logo" style={{ width: 28, height: 28, objectFit: 'cover', borderRadius: 4 }} />
+              <span>TeamPilot</span>
+            </Link>
           </h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <div className="pm-header__actions" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
             <span>Welcome, {userInfo.name}</span>
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <NotificationBell />
             </div>
             {userInfo?.isAdmin && (
-              <Link to="/admin" style={{ color: 'white', textDecoration: 'none', marginRight: 8 }}>Admin</Link>
+              <>
+                <Link to="/profile" style={{ color: 'white', textDecoration: 'none', marginRight: 8 }}>Profile</Link>
+                <Link to="/admin" style={{ color: 'white', textDecoration: 'none', marginRight: 8 }}>Admin</Link>
+              </>
             )}
             <button 
               onClick={() => dispatch(logout())}
@@ -51,9 +58,10 @@ function App() {
             </button>
           </div>
         </header>
-        <main style={{ flex: 1, backgroundColor: '#0079bf', overflowY: 'auto' }}>
+        <main className="pm-main" style={{ flex: 1, backgroundColor: '#0079bf', overflowY: 'auto' }}>
           <Routes>
             <Route path="/" element={<Dashboard />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="/admin" element={<AdminPanel />} />
             <Route path="/board/:id" element={<Board />} />
           </Routes>
