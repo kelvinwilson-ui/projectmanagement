@@ -7,6 +7,7 @@ on:
 jobs:
   smoke:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       BACKEND_URL: http://localhost:5000
       FRONTEND_URL: http://localhost:5173
@@ -23,6 +24,19 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+
+      - name: CI diagnostics
+        run: |
+          echo "--- System ---"
+          uname -a || true
+          echo "--- Node / NPM ---"
+          node --version || true
+          npm --version || true
+          echo "--- Backend files ---"
+          ls -la backend || true
+          echo "--- Frontend files ---"
+          ls -la frontend || true
+        shell: bash
 
       - name: Install backend dependencies
         run: npm install --prefix backend
@@ -58,6 +72,15 @@ jobs:
 
       - name: Run smoke tests
         run: bash scripts/smoke-test.sh
+
+      - name: Upload smoke logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-logs
+          path: |
+            /tmp/backend.log
+            /tmp/frontend.log
 
       - name: Show service logs on failure
         if: failure()

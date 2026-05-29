@@ -14,6 +14,89 @@ const canManageProject = (user, board) => {
   return isCreator || !!user.isAdmin;
 };
 
+const isSoloBoard = (board) => String(board?.collaborationMode || 'team') === 'solo';
+
+const isCompletedColumn = (column) => {
+  const title = String(column?.title || '').trim().toLowerCase();
+  return (
+    (column?.isDefault && (column?.order === 2 || title === 'completed')) ||
+    title === 'completed' ||
+    Number(column?.order) === 2
+  );
+};
+
+const syncProjectCompletionState = async (boardId) => {
+  if (!boardId) return;
+
+  const board = await Board.findById(boardId).populate('creator', 'name email isAdmin').populate({
+    path: 'columns',
+    populate: {
+      path: 'cards',
+      model: 'Card',
+      populate: {
+        path: 'assignee',
+        model: 'User',
+        select: 'name email'
+      }
+    }
+  });
+
+  if (!board) return;
+
+  const allCards = (board.columns || []).flatMap((column) => column.cards || []);
+  const completedColumn = (board.columns || []).find((column) => isCompletedColumn(column));
+  const completedCards = completedColumn?.cards || [];
+  const allComplete = allCards.length > 0 && completedCards.length === allCards.length;
+
+  if (!allComplete) {
+    if (board.completionAnnouncedAt) {
+      board.completionAnnouncedAt = null;
+      await board.save();
+    }
+    return;
+  }
+
+  if (board.completionAnnouncedAt) return;
+
+  const recipientIds = new Set();
+  if (board.creator) recipientIds.add(String(board.creator._id || board.creator));
+  for (const column of board.columns || []) {
+    for (const card of column.cards || []) {
+      const assigneeId = card.assignee ? String(card.assignee._id || card.assignee) : null;
+      if (assigneeId) recipientIds.add(assigneeId);
+    }
+  }
+
+  const managerName = board.creator?.name || 'the project manager';
+  const boardTitle = board.title;
+  const notificationText = `Project "${boardTitle}" has been completed by ${managerName}.`;
+
+  for (const userId of recipientIds) {
+    const note = await Notification.create({
+      user: userId,
+      type: 'project_completed',
+      data: {
+        boardId: String(board._id),
+        boardTitle,
+        projectManagerName: managerName,
+        text: notificationText
+      }
+    });
+
+    try {
+      const socketId = global.connectedSockets && global.connectedSockets.get(String(userId));
+      if (socketId && global.io) {
+        global.io.to(socketId).emit('notification', note);
+      }
+    } catch (emitErr) {
+      console.error('Socket emit error', emitErr);
+    }
+  }
+
+  board.completionAnnouncedAt = new Date();
+  await board.save();
+};
+
 // Create a new card
 router.post('/', protect, async (req, res) => {
   const card = new Card({
@@ -41,6 +124,8 @@ router.post('/', protect, async (req, res) => {
       $push: { cards: newCard._id }
     });
 
+    await syncProjectCompletionState(parentBoard._id);
+
     res.status(201).json(newCard);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -64,6 +149,10 @@ router.put('/:id', protect, async (req, res) => {
 
       const board = await Board.findById(column.boardId);
       if (!board) return res.status(400).json({ message: 'Parent board not found' });
+
+      if (isSoloBoard(board) && Object.prototype.hasOwnProperty.call(req.body, 'assignee') && req.body.assignee) {
+        return res.status(403).json({ message: 'This project is set to working alone, so assignees cannot be added.' });
+      }
 
       if (!canManageProject(req.user, board)) {
         return res.status(403).json({ message: 'Not authorized to edit this card details' });
@@ -92,6 +181,10 @@ router.put('/:id', protect, async (req, res) => {
       cardObj.restricted = true;
     } else {
       cardObj.restricted = false;
+    }
+
+    if (board?._id) {
+      await syncProjectCompletionState(board._id);
     }
 
     res.json(cardObj);
@@ -150,6 +243,8 @@ router.delete('/:id', protect, async (req, res) => {
     // Proceed with delete
     await Card.findByIdAndDelete(req.params.id);
     await Column.findByIdAndUpdate(card.columnId, { $pull: { cards: card._id } });
+
+    await syncProjectCompletionState(board._id);
 
     res.json({ message: 'Card deleted' });
   } catch (err) {
