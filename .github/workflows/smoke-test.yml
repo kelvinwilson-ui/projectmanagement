@@ -20,10 +20,10 @@ jobs:
           node-version: '18'
 
       - name: Install backend dependencies
-        run: npm ci --prefix backend
+        run: npm install --prefix backend
 
       - name: Install frontend dependencies
-        run: npm ci --prefix frontend --legacy-peer-deps
+        run: npm install --prefix frontend --legacy-peer-deps
 
       - name: Start backend
         run: node backend/server.js > /tmp/backend.log 2>&1 &
