@@ -1,4 +1,5 @@
 import React from 'react';
+import { API_BASE_URL } from '../config/runtimeUrls';
 
 export default class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -14,7 +15,7 @@ export default class ErrorBoundary extends React.Component {
     this.setState({ error, info });
     // Optionally send to server-side logging endpoint
     try {
-      fetch('http://localhost:5000/api/logs', {
+      fetch(`${API_BASE_URL}/logs`, {
         method: 'POST', body: JSON.stringify({ error: String(error), info }),
         headers: { 'Content-Type': 'application/json' }
       }).catch(() => {});

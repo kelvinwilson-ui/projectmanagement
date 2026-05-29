@@ -1,0 +1,175 @@
+body {
+  margin: 0;
+  background-color: #f4f5f7;
+  overflow-x: hidden;
+}
+
+.pm-shell {
+  min-height: 100vh;
+}
+
+.pm-main {
+  min-height: 0;
+}
+
+@media (max-width: 1024px) {
+  .pm-page {
+    padding: 24px !important;
+  }
+
+  .pm-page__hero {
+    gap: 16px;
+  }
+
+  .pm-board-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
+  }
+
+  .pm-profile__layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .pm-profile__list {
+    max-height: none !important;
+  }
+
+  .pm-column {
+    width: 280px !important;
+  }
+
+  .pm-card-modal__body {
+    width: min(560px, calc(100vw - 32px)) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .pm-shell {
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .pm-header {
+    padding: 12px 16px !important;
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 10px;
+  }
+
+  .pm-header h1 {
+    font-size: 1.15rem !important;
+  }
+
+  .pm-header__actions {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 10px !important;
+  }
+
+  .pm-header__actions > span {
+    width: 100%;
+  }
+
+  .pm-main {
+    overflow-x: hidden;
+  }
+
+  .pm-page {
+    padding: 16px !important;
+  }
+
+  .pm-page__hero {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  .pm-board-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .pm-project-card {
+    padding: 18px !important;
+  }
+
+  .pm-board__topbar {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 12px;
+  }
+
+  .pm-board__topbar > div {
+    width: 100%;
+  }
+
+  .pm-board__lanes {
+    gap: 12px;
+    padding-bottom: 16px !important;
+  }
+
+  .pm-column {
+    width: 84vw !important;
+    max-width: 300px;
+    margin: 0 4px !important;
+  }
+
+  .pm-profile__tabs,
+  .pm-admin__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pm-profile__tabs > button,
+  .pm-admin__actions > button {
+    width: 100%;
+  }
+
+  .pm-profile__detail,
+  .pm-profile__list {
+    padding: 16px !important;
+  }
+
+  .pm-card-modal {
+    padding: 12px;
+    align-items: flex-start !important;
+    overflow-y: auto;
+  }
+
+  .pm-card-modal__body {
+    width: calc(100vw - 24px) !important;
+    max-height: calc(100vh - 24px) !important;
+    padding: 20px !important;
+    border-radius: 14px !important;
+  }
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+@keyframes celebrate-pop {
+  0% {
+    transform: scale(0.96);
+    opacity: 0.88;
+  }
+  100% {
+    transform: scale(1.04);
+    opacity: 1;
+  }
+}
+
+@keyframes name-pulse {
+  0% {
+    transform: translateY(0);
+    opacity: 0.82;
+  }
+  100% {
+    transform: translateY(-8px);
+    opacity: 1;
+  }
+}
