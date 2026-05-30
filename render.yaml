@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: projectmanagement-backend
+    runtime: node
+    rootDir: backend
+    branch: staging
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    autoDeployTrigger: commit
+    healthCheckPath: /api/health
+    envVars:
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+
+  - type: static
+    name: projectmanagement-frontend
+    runtime: static
+    rootDir: frontend
+    branch: staging
+    plan: free
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    autoDeployTrigger: commit
+    envVars:
+      - key: VITE_API_URL
+        value: https://projectmanagement-backend.onrender.com/api
