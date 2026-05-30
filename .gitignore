@@ -1,0 +1,34 @@
+# Node
+node_modules/
+package-lock.json
+npm-debug.log
+
+# Local env
+.env
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+
+# Logs
+logs/
+*.log
+.env*
+deploy_keys/
+traefik/acme.json
+deploy-staging.sh
+backend/data/
+backend/mongodb-macos*
+frontend/dist/
+.env*
+deploy_keys/
+traefik/acme.json
+deploy-staging.sh
+backend/data/
+backend/mongodb-macos*
+frontend/dist/
+.env*
+deploy_keys/

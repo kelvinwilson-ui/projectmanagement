@@ -1,0 +1,91 @@
+name: Smoke Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      BACKEND_URL: http://localhost:5000
+      FRONTEND_URL: http://localhost:5173
+    services:
+      mongo:
+        image: mongo:6.0
+        ports:
+          - 27017:27017
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: CI diagnostics
+        run: |
+          echo "--- System ---"
+          uname -a || true
+          echo "--- Node / NPM ---"
+          node --version || true
+          npm --version || true
+          echo "--- Backend files ---"
+          ls -la backend || true
+          echo "--- Frontend files ---"
+          ls -la frontend || true
+        shell: bash
+
+      - name: Install backend dependencies
+        run: npm install --prefix backend
+
+      - name: Install frontend dependencies
+        run: npm install --prefix frontend --legacy-peer-deps
+
+      - name: Start backend
+        run: node backend/server.js > /tmp/backend.log 2>&1 &
+
+      - name: Start frontend
+        run: npm --prefix frontend run dev -- --port 5173 > /tmp/frontend.log 2>&1 &
+
+      - name: Wait for services
+        run: |
+          for i in {1..120}; do
+            backend_ok=0
+            frontend_ok=0
+            curl -fsS "${BACKEND_URL}/api/health" >/dev/null && backend_ok=1 || true
+            curl -fsS "${FRONTEND_URL}/" >/dev/null && frontend_ok=1 || true
+            if [ "$backend_ok" -eq 1 ] && [ "$frontend_ok" -eq 1 ]; then
+              echo "Services are up"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Service startup timed out"
+          echo "--- backend log ---"
+          cat /tmp/backend.log || true
+          echo "--- frontend log ---"
+          cat /tmp/frontend.log || true
+          exit 1
+
+      - name: Run smoke tests
+        run: bash scripts/smoke-test.sh
+
+      - name: Upload smoke logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-logs
+          path: |
+            /tmp/backend.log
+            /tmp/frontend.log
+
+      - name: Show service logs on failure
+        if: failure()
+        run: |
+          echo "--- backend log ---"
+          cat /tmp/backend.log || true
+          echo "--- frontend log ---"
+          cat /tmp/frontend.log || true

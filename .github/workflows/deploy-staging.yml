@@ -1,0 +1,56 @@
+name: Deploy Staging
+
+on:
+  push:
+    branches: [ staging ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate deploy secrets
+        run: |
+          missing=0
+          if [ -z "${{ secrets.SSH_HOST }}" ]; then echo "Missing secret: SSH_HOST"; missing=1; fi
+          if [ -z "${{ secrets.SSH_USER }}" ]; then echo "Missing secret: SSH_USER"; missing=1; fi
+          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then echo "Missing secret: SSH_PRIVATE_KEY"; missing=1; fi
+          if [ -z "${{ secrets.DEPLOY_PATH }}" ]; then echo "Missing secret: DEPLOY_PATH"; missing=1; fi
+          if [ $missing -ne 0 ]; then echo "One or more required deploy secrets are missing. Aborting."; exit 1; fi
+        shell: bash
+
+      - name: Deploy to server via SSH
+        uses: appleboy/ssh-action@v0.1.7
+        env:
+          ENV_STAGING: ${{ secrets.ENV_STAGING }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -euo pipefail
+            echo "Ensuring deploy path exists: ${DEPLOY_PATH}"
+            mkdir -p "${DEPLOY_PATH}"
+            cd "${DEPLOY_PATH}"
+            if [ -d .git ]; then
+              git fetch --all --prune
+              git reset --hard origin/staging
+            else
+              git clone "git@github.com:${{ github.repository }}" .
+              git checkout staging || true
+            fi
+
+            # If ENV_STAGING secret provided, write it to .env.staging (overwrite)
+            if [ -n "${ENV_STAGING}" ]; then
+              printf '%s\n' "${ENV_STAGING}" > .env.staging
+              chmod 600 .env.staging || true
+            fi
+
+            chmod +x ./deploy-staging.sh || true
+            ./deploy-staging.sh
