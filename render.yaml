@@ -3,8 +3,7 @@ services:
     name: projectmanagement-backend
     runtime: node
     rootDir: backend
-    branch: staging
-    plan: free
+    branch: temp-clean-branch
     buildCommand: npm install
     startCommand: npm start
     autoDeployTrigger: commit
@@ -19,8 +18,7 @@ services:
     name: projectmanagement-frontend
     runtime: static
     rootDir: frontend
-    branch: staging
-    plan: free
+    branch: temp-clean-branch
     buildCommand: npm install && npm run build
     staticPublishPath: dist
     autoDeployTrigger: commit
