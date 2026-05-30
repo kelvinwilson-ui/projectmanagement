@@ -16,3 +16,19 @@ npm-debug.log
 # Logs
 logs/
 *.log
+.env*
+deploy_keys/
+traefik/acme.json
+deploy-staging.sh
+backend/data/
+backend/mongodb-macos*
+frontend/dist/
+.env*
+deploy_keys/
+traefik/acme.json
+deploy-staging.sh
+backend/data/
+backend/mongodb-macos*
+frontend/dist/
+.env*
+deploy_keys/
