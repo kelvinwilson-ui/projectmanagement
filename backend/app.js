@@ -11,27 +11,21 @@ import notificationsRoutes from './routes/notifications.js';
 const createApp = (options = {}) => {
   const app = express();
 
+  const productionOrigin = process.env.FRONTEND_ORIGIN;
   const frontendOrigins = [
-    process.env.FRONTEND_ORIGIN,
+    productionOrigin,
     'http://localhost:5173',
     'http://127.0.0.1:5173',
   ].filter(Boolean);
 
   console.log('Allowed frontendOrigins:', frontendOrigins);
 
-  const isDevOrigin = (origin) => {
-    if (!origin) return true;
-    if (process.env.NODE_ENV === 'production') return false;
-    return /^https?:\/\//i.test(origin);
-  };
+  const corsOrigin = process.env.NODE_ENV === 'production' && productionOrigin
+    ? productionOrigin
+    : frontendOrigins;
 
   app.use(cors({
-    origin: (origin, callback) => {
-      if (isDevOrigin(origin) || frontendOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-      return callback(new Error(`CORS blocked for origin: ${origin}`));
-    },
+    origin: corsOrigin,
     credentials: true,
   }));
   app.use(express.json());
