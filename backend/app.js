@@ -11,7 +11,12 @@ import notificationsRoutes from './routes/notifications.js';
 const createApp = (options = {}) => {
   const app = express();
 
-  const productionOrigin = process.env.FRONTEND_ORIGIN;
+  const normalizeOrigin = (value) => {
+    if (typeof value !== 'string') return '';
+    return value.replace(/[\r\n]/g, '').trim();
+  };
+
+  const productionOrigin = normalizeOrigin(process.env.FRONTEND_ORIGIN);
   const frontendOrigins = [
     productionOrigin,
     'http://localhost:5173',
