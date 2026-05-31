@@ -17,7 +17,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+app.use(cors({ origin: process.env.FRONTEND_ORIGIN || '*' }));
 app.use(express.json());
 
 // MongoDB connection (replace with your local or Atlas URI)
@@ -61,7 +61,7 @@ app.use((err, req, res, next) => {
 // Create HTTP server and attach Socket.IO for real-time notifications
 const httpServer = createServer(app);
 const io = new IOServer(httpServer, {
-  cors: { origin: '*' }
+  cors: { origin: process.env.FRONTEND_ORIGIN || '*' }
 });
 
 // Map of userId -> socketId for quick lookup
