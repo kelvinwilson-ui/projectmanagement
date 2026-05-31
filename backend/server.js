@@ -26,8 +26,11 @@ mongoose.connect(MONGODB_URI)
 
 // Create HTTP server and attach Socket.IO for real-time notifications
 const httpServer = createServer(app);
+// Log important environment values for debugging CORS issues
+console.log('FRONTEND_ORIGIN=', process.env.FRONTEND_ORIGIN);
+console.log('NODE_ENV=', process.env.NODE_ENV);
 const io = new IOServer(httpServer, {
-  cors: { origin: '*' }
+  cors: { origin: process.env.FRONTEND_ORIGIN || '*' }
 });
 
 // Map of userId -> socketId for quick lookup
