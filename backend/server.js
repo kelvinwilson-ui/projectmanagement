@@ -9,8 +9,16 @@ dotenv.config();
 
 const PORT = process.env.PORT || 5000;
 
-// MongoDB connection (replace with your local or Atlas URI)
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/project_management';
+// MongoDB connection
+// Priority: env MONGODB_URI > production fallback > localhost
+let MONGODB_URI = process.env.MONGODB_URI;
+if (!MONGODB_URI && process.env.NODE_ENV === 'production') {
+  MONGODB_URI = 'mongodb+srv://kelvinwilson_db_user_projectmanagement:7OzhXlQUzEEfKQSn@cluster0.rkbnvuf.mongodb.net/?appName=Cluster0';
+}
+MONGODB_URI = MONGODB_URI || 'mongodb://127.0.0.1:27017/project_management';
+
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('Using MongoDB URI:', MONGODB_URI.substring(0, 60) + '...');
 
 mongoose.connect(MONGODB_URI)
   .then(async () => {
