@@ -9,13 +9,9 @@ dotenv.config();
 
 const PORT = process.env.PORT || 5000;
 
-// MongoDB connection
-// Priority: env MONGODB_URI > production fallback > localhost
-let MONGODB_URI = process.env.MONGODB_URI;
-if (!MONGODB_URI && process.env.NODE_ENV === 'production') {
-  MONGODB_URI = 'mongodb+srv://kelvinwilson_db_user_projectmanagement:7OzhXlQUzEEfKQSn@cluster0.rkbnvuf.mongodb.net/?appName=Cluster0';
-}
-MONGODB_URI = MONGODB_URI || 'mongodb://127.0.0.1:27017/project_management';
+// MongoDB connection - use new Atlas credentials
+// Override any old MONGODB_URI with the new working one for production
+const MONGODB_URI = 'mongodb+srv://kelvinwilson_db_user_projectmanagement:7OzhXlQUzEEfKQSn@cluster0.rkbnvuf.mongodb.net/?appName=Cluster0';
 
 console.log('NODE_ENV:', process.env.NODE_ENV);
 console.log('Using MongoDB URI:', MONGODB_URI.substring(0, 60) + '...');
