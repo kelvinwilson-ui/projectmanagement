@@ -1,5 +1,4 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
 import axiosClient from '../api/axiosClient';
 import { API_BASE_URL } from '../config/runtimeUrls';
 
@@ -20,23 +19,23 @@ const userInfo = readStoredJson('userInfo');
 
 export const registerUser = createAsyncThunk('auth/register', async (userData, thunkAPI) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/auth/register`, userData, { withCredentials: true });
+    const response = await axiosClient.post('/auth/register', userData);
     localStorage.setItem('userInfo', JSON.stringify(response.data));
     localStorage.setItem('userToken', response.data.token);
     return response.data;
   } catch (error) {
-    return thunkAPI.rejectWithValue(error.response.data.message || error.message);
+    return thunkAPI.rejectWithValue(error.response?.data?.message || error.message);
   }
 });
 
 export const loginUser = createAsyncThunk('auth/login', async (userData, thunkAPI) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/auth/login`, userData, { withCredentials: true });
+    const response = await axiosClient.post('/auth/login', userData);
     localStorage.setItem('userInfo', JSON.stringify(response.data));
     localStorage.setItem('userToken', response.data.token);
     return response.data;
   } catch (error) {
-    return thunkAPI.rejectWithValue(error.response.data.message || error.message);
+    return thunkAPI.rejectWithValue(error.response?.data?.message || error.message);
   }
 });
 
@@ -79,7 +78,7 @@ export const updateUserRole = createAsyncThunk('auth/updateUserRole', async ({ u
 
 export const completePasswordSetup = createAsyncThunk('auth/completePasswordSetup', async ({ userId, password }, thunkAPI) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/auth/complete-setup`, { userId, password }, { withCredentials: true });
+    const response = await axiosClient.post('/auth/complete-setup', { userId, password });
     return { message: response.data.message, userId };
   } catch (error) {
     return thunkAPI.rejectWithValue(error.response?.data?.message || error.message);
