@@ -33,6 +33,13 @@ const createApp = (options = {}) => {
     origin: corsOrigin,
     credentials: true,
   }));
+
+  // Ensure Access-Control-Allow-Credentials is always sent
+  app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    next();
+  });
+
   app.use(express.json());
   app.use(cookieParser());
 
