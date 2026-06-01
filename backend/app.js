@@ -21,16 +21,13 @@ const createApp = (options = {}) => {
     productionOrigin,
     'http://localhost:5173',
     'http://127.0.0.1:5173',
+    'https://projectmanagement-xi-three.vercel.app', // Vercel frontend
   ].filter(Boolean);
 
   console.log('Allowed frontendOrigins:', frontendOrigins);
 
-  const corsOrigin = process.env.NODE_ENV === 'production' && productionOrigin
-    ? productionOrigin
-    : frontendOrigins;
-
   app.use(cors({
-    origin: corsOrigin,
+    origin: frontendOrigins,
     credentials: true,
   }));
 
