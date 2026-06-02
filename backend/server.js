@@ -1,20 +1,38 @@
 import dotenv from 'dotenv';
+import express from 'express'; // <-- FIX 1: Added missing express import
 import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
 import { createServer } from 'http';
 import { Server as IOServer } from 'socket.io';
+import cors from "cors";
 import app from './app.js';
 
 dotenv.config();
 
 const PORT = process.env.PORT || 5000;
 
-// MongoDB connection - use new Atlas credentials
-// Override any old MONGODB_URI with the new working one for production
-const MONGODB_URI = 'mongodb+srv://kelvinwilson_db_user_projectmanagement:7OzhXlQUzEEfKQSn@cluster0.rkbnvuf.mongodb.net/?appName=Cluster0';
+// FIX 2: Check for a Railway/Env variable first, fallback to string if absolutely necessary for now
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://kelvinwilson_db_user_projectmanagement:7OzhXlQUzEEfKQSn@cluster0.rkbnvuf.mongodb.net/?appName=Cluster0';
+
+// CORS Configuration
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://projectmanagement-xi-three.vercel.app'
+];
+
+// NOTE: It is highly recommended to move this app.use(cors(...)) and app.use(express.json()) 
+// inside your 'app.js' file right BEFORE you define any routes (app.use('/api', ...))
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+app.use(express.json());
 
 console.log('NODE_ENV:', process.env.NODE_ENV);
-console.log('Using MongoDB URI:', MONGODB_URI.substring(0, 60) + '...');
+console.log('Using MongoDB URI:', MONGODB_URI.substring(0, 30) + '...');
 
 mongoose.connect(MONGODB_URI)
   .then(async () => {
@@ -28,13 +46,16 @@ mongoose.connect(MONGODB_URI)
   })
   .catch((err) => console.error('MongoDB connection error:', err));
 
-// Create HTTP server and attach Socket.IO for real-time notifications
+// Create HTTP server and attach Socket.IO
 const httpServer = createServer(app);
-// Log important environment values for debugging CORS issues
+
 console.log('FRONTEND_ORIGIN=', process.env.FRONTEND_ORIGIN);
-console.log('NODE_ENV=', process.env.NODE_ENV);
 const io = new IOServer(httpServer, {
-  cors: { origin: process.env.FRONTEND_ORIGIN || '*' }
+  cors: { 
+    origin: allowedOrigins,
+    credentials: true, 
+    methods: ['GET', 'POST'] 
+  }
 });
 
 // Map of userId -> socketId for quick lookup
@@ -59,6 +80,7 @@ io.on('connection', (socket) => {
   });
 });
 
+// Railway dynamically assigns a port, so we listen on process.env.PORT via PORT variable
 httpServer.listen(PORT, () => {
-  console.log(`Backend server running on http://localhost:${PORT}`);
+  console.log(`Backend server running on port ${PORT}`);
 });
