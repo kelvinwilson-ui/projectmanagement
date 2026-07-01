@@ -12,12 +12,25 @@ const Auth = () => {
   const [name, setName] = useState('');
   const [role, setRole] = useState('projectManager');
 
-  const handleSubmit = (e) => {
+  const routeAfterAuth = (user) => {
+    if (typeof window === 'undefined') return;
+
+    const nextPath = user?.isAdmin ? '/admin' : '/';
+    window.history.replaceState({}, '', nextPath);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (isLogin) {
-      dispatch(loginUser({ identifier, password }));
+      const action = await dispatch(loginUser({ identifier, password }));
+      if (loginUser.fulfilled.match(action)) {
+        routeAfterAuth(action.payload);
+      }
     } else {
-      dispatch(registerUser({ name, email: identifier, password, role }));
+      const action = await dispatch(registerUser({ name, email: identifier, password, role }));
+      if (registerUser.fulfilled.match(action)) {
+        routeAfterAuth(action.payload);
+      }
     }
   };
 
