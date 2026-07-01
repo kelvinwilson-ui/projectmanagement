@@ -5,13 +5,24 @@ const getLocation = () => {
   return window.location;
 };
 
+const normalizeApiBase = (value) => {
+  if (typeof value !== 'string') return value;
+  const trimmed = value.trim();
+  if (!trimmed) return trimmed;
+  if (trimmed.endsWith('/api')) return trimmed;
+  if (/^https?:\/\//i.test(trimmed) || trimmed.startsWith('/')) {
+    return `${trimmed.replace(/\/$/, '')}/api`;
+  }
+  return trimmed;
+};
+
 const getApiBase = () => {
   // Check environment variables first
   if (import.meta.env?.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
+    return normalizeApiBase(import.meta.env.VITE_API_URL);
   }
   if (import.meta.env?.VITE_API_BASE_URL) {
-    return import.meta.env.VITE_API_BASE_URL;
+    return normalizeApiBase(import.meta.env.VITE_API_BASE_URL);
   }
 
   // Runtime check: if on Vercel domain, use Railway backend
