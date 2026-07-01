@@ -1,4 +1,5 @@
 const RAILWAY_BACKEND = 'https://projectmanagement-production-61f5.up.railway.app/api';
+const RAILWAY_SOCKET = 'https://projectmanagement-production-61f5.up.railway.app';
 
 const getLocation = () => {
   if (typeof window === 'undefined') return null;
@@ -39,8 +40,12 @@ const getSocketBase = () => {
   if (import.meta.env?.VITE_SOCKET_URL) {
     return import.meta.env.VITE_SOCKET_URL;
   }
-  
+
   const location = getLocation();
+  if (location && /vercel\.app$/i.test(location.hostname)) {
+    return RAILWAY_SOCKET;
+  }
+
   if (!location) return 'http://localhost:5000';
   return `${location.protocol}//${location.hostname}:5000`;
 };
