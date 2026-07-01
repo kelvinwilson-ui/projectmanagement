@@ -317,6 +317,54 @@ const Dashboard = () => {
                 </button>
               )}
             </div>
+
+            {canCreateProject && (
+              <form onSubmit={handleAddProject} style={{ display: 'grid', gap: 12, marginTop: 24, paddingTop: 20, borderTop: '1px solid #e6eef6' }}>
+                <div style={{ fontSize: 15, fontWeight: 800, color: '#0079bf' }}>Create your first project</div>
+                <input
+                  required
+                  placeholder="Project Name"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  style={{ padding: '12px', borderRadius: '6px', border: '2px solid #dfe1e6', fontSize: '16px' }}
+                />
+                <textarea
+                  required
+                  placeholder="Project description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  style={{ padding: '12px', borderRadius: '6px', border: '2px solid #dfe1e6', height: '96px', fontSize: '16px', resize: 'none' }}
+                />
+                <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))' }}>
+                  <select value={urgency} onChange={(e) => setUrgency(e.target.value)} style={{ padding: '12px', borderRadius: '6px', border: '2px solid #dfe1e6', fontSize: '16px', backgroundColor: 'white' }}>
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                  </select>
+                  <input
+                    type="date"
+                    value={deadline}
+                    onChange={(e) => setDeadline(e.target.value)}
+                    style={{ padding: '12px', borderRadius: '6px', border: '2px solid #dfe1e6', fontSize: '16px', backgroundColor: 'white' }}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  style={{
+                    padding: '12px 18px',
+                    borderRadius: '999px',
+                    border: 'none',
+                    background: '#0079bf',
+                    color: 'white',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    justifySelf: 'start'
+                  }}
+                >
+                  Create Project
+                </button>
+              </form>
+            )}
           </div>
         </div>
       )}
