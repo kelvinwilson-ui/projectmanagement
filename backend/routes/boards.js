@@ -92,9 +92,9 @@ router.get('/:id', protect, async (req, res) => {
 
 // Create a new board
 router.post('/', protect, async (req, res) => {
-  // Allow only admins to create new boards
-  if (!req.user.isAdmin) {
-    return res.status(403).json({ message: 'Only admins can create new projects' });
+  // Allow admins and project managers to create new boards
+  if (!req.user.isAdmin && req.user.role !== 'projectManager') {
+    return res.status(403).json({ message: 'Only admins or project managers can create new projects' });
   }
 
   const board = new Board({
@@ -103,7 +103,7 @@ router.post('/', protect, async (req, res) => {
     urgency: req.body.urgency,
     deadline: req.body.deadline,
     collaborationMode: req.body.collaborationMode === 'solo' ? 'solo' : 'team',
-    creator: req.user._id // Assign logged in user as creator (admin)
+    creator: req.user._id // Assign logged in user as creator
   });
   
   try {

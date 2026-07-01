@@ -22,8 +22,8 @@ const canManageRoles = (user) => !!user && !!user.isAdmin;
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
-    const requestedRole = typeof role === 'string' ? role : 'user';
-    const safeRole = ['user', 'projectManager', 'admin'].includes(requestedRole) ? requestedRole : 'user';
+    const requestedRole = typeof role === 'string' ? role : 'projectManager';
+    const safeRole = ['user', 'projectManager', 'admin'].includes(requestedRole) ? requestedRole : 'projectManager';
 
     const userExists = await User.findOne({ email });
     if (userExists) {

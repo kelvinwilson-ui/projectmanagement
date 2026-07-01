@@ -10,7 +10,7 @@ const Auth = () => {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [role, setRole] = useState('user');
+  const [role, setRole] = useState('projectManager');
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -70,8 +70,8 @@ const Auth = () => {
               onChange={(e) => setRole(e.target.value)}
               style={{ padding: '10px', borderRadius: '4px', border: '2px solid #dfe1e6', background: 'white' }}
             >
-              <option value="user">User</option>
               <option value="projectManager">Project Manager</option>
+              <option value="user">User</option>
             </select>
           )}
 

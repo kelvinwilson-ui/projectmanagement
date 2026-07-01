@@ -12,7 +12,7 @@ const Dashboard = () => {
   const location = useLocation();
   const { list, status } = useSelector((state) => state.boards);
   const { userInfo } = useSelector((state) => state.auth);
-  const canCreateProject = !!userInfo?.isAdmin;
+  const canCreateProject = !!userInfo?.isAdmin || userInfo?.role === 'projectManager';
   const userToken = useSelector((state) => state.auth?.userToken);
   
   const [showModal, setShowModal] = useState(false);
