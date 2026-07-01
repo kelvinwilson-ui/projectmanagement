@@ -28,6 +28,14 @@ export const registerUser = createAsyncThunk('auth/register', async (userData, t
   }
 });
 
+const normalizeSignedInUser = (user) => {
+  if (!user) return user;
+  return {
+    ...user,
+    role: user.role || (user.isAdmin ? 'admin' : 'projectManager'),
+  };
+};
+
 export const loginUser = createAsyncThunk('auth/login', async (userData, thunkAPI) => {
   try {
     const response = await axiosClient.post('/auth/login', userData);
@@ -111,7 +119,7 @@ const authSlice = createSlice({
       .addCase(registerUser.pending, (state) => { state.loading = true; state.error = null; })
       .addCase(registerUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.userInfo = action.payload;
+        state.userInfo = normalizeSignedInUser(action.payload);
         state.userToken = action.payload.token;
       })
       .addCase(registerUser.rejected, (state, action) => {
@@ -121,7 +129,7 @@ const authSlice = createSlice({
       .addCase(loginUser.pending, (state) => { state.loading = true; state.error = null; })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.userInfo = action.payload;
+        state.userInfo = normalizeSignedInUser(action.payload);
         state.userToken = action.payload.token;
       })
       .addCase(loginUser.rejected, (state, action) => {

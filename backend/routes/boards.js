@@ -93,7 +93,7 @@ router.get('/:id', protect, async (req, res) => {
 // Create a new board
 router.post('/', protect, async (req, res) => {
   // Allow admins and project managers to create new boards
-  if (!req.user.isAdmin && req.user.role !== 'projectManager') {
+  if (!req.user.isAdmin && req.user.role === 'user') {
     return res.status(403).json({ message: 'Only admins or project managers can create new projects' });
   }
 
