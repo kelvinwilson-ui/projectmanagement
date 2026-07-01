@@ -53,7 +53,7 @@ router.post('/register', async (req, res) => {
     await user.save();
     const cookieOptions = {
       httpOnly: true,
-      sameSite: 'lax',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       secure: process.env.NODE_ENV === 'production',
       maxAge: 1000 * 60 * 60 * 24 * 7,
     };
@@ -117,7 +117,7 @@ router.post('/login', async (req, res) => {
     // set httpOnly cookie for refresh token
     const cookieOptions = {
       httpOnly: true,
-      sameSite: 'lax',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       secure: process.env.NODE_ENV === 'production',
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
     };
@@ -170,7 +170,7 @@ router.post('/refresh', async (req, res) => {
 
     const cookieOptions = {
       httpOnly: true,
-      sameSite: 'lax',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       secure: process.env.NODE_ENV === 'production',
       maxAge: 1000 * 60 * 60 * 24 * 7,
     };
