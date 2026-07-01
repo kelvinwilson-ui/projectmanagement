@@ -4,7 +4,6 @@ import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
 import { createServer } from 'http';
 import { Server as IOServer } from 'socket.io';
-import cors from "cors";
 import app from './app.js';
 
 dotenv.config();

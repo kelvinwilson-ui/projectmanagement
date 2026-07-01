@@ -1,4 +1,4 @@
-const RAILWAY_BACKEND = 'https://projectmanagement-production-61f5.up.railway.app';
+const RAILWAY_BACKEND = 'https://projectmanagement-production-61f5.up.railway.app/api';
 
 const getLocation = () => {
   if (typeof window === 'undefined') return null;
