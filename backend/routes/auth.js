@@ -14,8 +14,7 @@ const toSafeUser = (user) => {
   return safeUser;
 };
 
-// Deprecated `isProjectManager` removed: use `isAdmin` for all elevated privileges
-const canManageProjects = (user) => !!user && !!user.isAdmin;
+const canManageProjects = (user) => !!user && (user.isAdmin || user.role === 'projectManager');
 const canManageRoles = (user) => !!user && !!user.isAdmin;
 
 // @route   POST /api/auth/register
@@ -23,6 +22,8 @@ const canManageRoles = (user) => !!user && !!user.isAdmin;
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
+    const requestedRole = typeof role === 'string' ? role : 'user';
+    const safeRole = ['user', 'projectManager', 'admin'].includes(requestedRole) ? requestedRole : 'user';
 
     const userExists = await User.findOne({ email });
     if (userExists) {
@@ -30,12 +31,13 @@ router.post('/register', async (req, res) => {
     }
 
     // Only explicit 'admin' role grants admin privileges at signup
-    const isAdmin = role === 'admin';
+    const isAdmin = safeRole === 'admin';
     const user = await User.create({
       name,
       email,
       password,
       isAdmin,
+      role: safeRole,
     });
 
     if (!user) {
@@ -62,6 +64,7 @@ router.post('/register', async (req, res) => {
       email: safeUser.email,
       phone: safeUser.phone,
       isAdmin: safeUser.isAdmin,
+      role: safeUser.role,
       mustSetPassword: safeUser.mustSetPassword,
       token: accessToken,
     });
@@ -126,6 +129,7 @@ router.post('/login', async (req, res) => {
       email: safeUser.email,
       phone: safeUser.phone,
       isAdmin: safeUser.isAdmin,
+      role: safeUser.role,
       mustSetPassword: !!safeUser.mustSetPassword,
       token: accessToken,
     });
@@ -208,6 +212,7 @@ router.get('/users', protect, async (req, res) => {
       email: user.email,
       phone: user.phone,
       isAdmin: !!user.isAdmin,
+      role: user.role,
       mustSetPassword: !!user.mustSetPassword,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
@@ -221,7 +226,7 @@ router.get('/users', protect, async (req, res) => {
 router.post('/users', protect, async (req, res) => {
   try {
     if (!canManageProjects(req.user)) {
-      return res.status(403).json({ message: 'Only admins can invite users' });
+      return res.status(403).json({ message: 'Only admins or project managers can invite users' });
     }
 
     const { name, email, phone } = req.body;
@@ -230,7 +235,7 @@ router.post('/users', protect, async (req, res) => {
     const existing = await User.findOne({ email });
     if (existing) return res.status(400).json({ message: 'User already exists' });
 
-    const user = await User.create({ name, email, phone, mustSetPassword: true });
+    const user = await User.create({ name, email, phone, mustSetPassword: true, role: 'user' });
     res.status(201).json(toSafeUser(user));
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -272,6 +277,7 @@ router.put('/users/:id/admin', protect, async (req, res) => {
         return res.status(403).json({ message: 'Only admins can grant or revoke admin status' });
       }
       user.isAdmin = req.body.isAdmin;
+      user.role = req.body.isAdmin ? 'admin' : 'user';
     }
 
     await user.save();
@@ -298,6 +304,7 @@ router.put('/users/:id/role', protect, async (req, res) => {
         return res.status(403).json({ message: 'Only admins can change admin status' });
       }
       user.isAdmin = !!req.body.isAdmin;
+      user.role = user.isAdmin ? 'admin' : 'user';
     }
 
     await user.save();

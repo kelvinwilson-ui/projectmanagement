@@ -28,8 +28,21 @@ const userSchema = new mongoose.Schema({
   isAdmin: {
     type: Boolean,
     default: false
+  },
+  role: {
+    type: String,
+    enum: ['user', 'projectManager', 'admin'],
+    default: 'user'
   }
 }, { timestamps: true });
+
+userSchema.pre('save', function() {
+  if (this.isAdmin) {
+    this.role = 'admin';
+  } else if (this.role === 'admin') {
+    this.role = 'user';
+  }
+});
 
 // Hash password before saving
 userSchema.pre('save', async function() {

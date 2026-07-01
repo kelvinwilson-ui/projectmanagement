@@ -64,7 +64,16 @@ const Auth = () => {
             style={{ padding: '10px', borderRadius: '4px', border: '2px solid #dfe1e6' }}
           />
 
-          {/* Registration defaults to regular user; Project Manager role is managed by admins */}
+          {!isLogin && (
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              style={{ padding: '10px', borderRadius: '4px', border: '2px solid #dfe1e6', background: 'white' }}
+            >
+              <option value="user">User</option>
+              <option value="projectManager">Project Manager</option>
+            </select>
+          )}
 
           <button 
             type="submit" 
