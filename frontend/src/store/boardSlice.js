@@ -1,79 +1,69 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import axiosClient from '../api/axiosClient';
 import { API_BASE_URL } from '../config/runtimeUrls';
 
-const getConfig = (thunkAPI) => {
-  const { auth } = thunkAPI.getState();
-  const token = auth?.userToken || auth?.userInfo?.token || null;
-  return {
-    headers: {
-      Authorization: token ? `Bearer ${token}` : undefined,
-    },
-  };
-};
-
 export const fetchBoards = createAsyncThunk('boards/fetchBoards', async (_, thunkAPI) => {
-  const response = await axios.get(`${API_BASE_URL}/boards`, getConfig(thunkAPI));
+  const response = await axiosClient.get('/boards');
   return response.data;
 });
 
 export const fetchBoardDetails = createAsyncThunk('boards/fetchBoardDetails', async (boardId, thunkAPI) => {
-  const response = await axios.get(`${API_BASE_URL}/boards/${boardId}`, getConfig(thunkAPI));
+  const response = await axiosClient.get(`/boards/${boardId}`);
   return response.data;
 });
 
 export const updateBoardColumns = createAsyncThunk('boards/updateBoardColumns', async ({ boardId, columns }, thunkAPI) => {
-  const response = await axios.put(`${API_BASE_URL}/boards/${boardId}/columns`, { columns }, getConfig(thunkAPI));
+  const response = await axiosClient.put(`/boards/${boardId}/columns`, { columns });
   return response.data;
 });
 
 export const updateCardPosition = createAsyncThunk('boards/updateCardPosition', async ({ cardId, data }, thunkAPI) => {
   // Assuming cards also gets protected eventually, let's pass token
-  const response = await axios.put(`${API_BASE_URL}/cards/${cardId}`, data, getConfig(thunkAPI));
+  const response = await axiosClient.put(`/cards/${cardId}`, data);
   return response.data;
 });
 
 export const toggleCardReady = createAsyncThunk('boards/toggleCardReady', async ({ cardId, ready }, thunkAPI) => {
-  const response = await axios.put(`${API_BASE_URL}/cards/${cardId}/ready`, { ready }, getConfig(thunkAPI));
+  const response = await axiosClient.put(`/cards/${cardId}/ready`, { ready });
   return response.data;
 });
 
 export const updateCardDetails = createAsyncThunk('boards/updateCardDetails', async ({ cardId, data }, thunkAPI) => {
-  const response = await axios.put(`${API_BASE_URL}/cards/${cardId}`, data, getConfig(thunkAPI));
+  const response = await axiosClient.put(`/cards/${cardId}`, data);
   return response.data;
 });
 
 export const addCardComment = createAsyncThunk('boards/addCardComment', async ({ cardId, text }, thunkAPI) => {
   const { auth } = thunkAPI.getState();
-  const response = await axios.post(`${API_BASE_URL}/cards/${cardId}/comments`, { 
+  const response = await axiosClient.post(`/cards/${cardId}/comments`, { 
     text, 
     user: auth.userInfo._id 
-  }, getConfig(thunkAPI));
+  });
   return response.data;
 });
 
 export const createCard = createAsyncThunk('boards/createCard', async ({ columnId, title, order }, thunkAPI) => {
-  const response = await axios.post(`${API_BASE_URL}/cards`, { columnId, title, order }, getConfig(thunkAPI));
+  const response = await axiosClient.post('/cards', { columnId, title, order });
   return { ...response.data, columnId };
 });
 
 export const createColumn = createAsyncThunk('boards/createColumn', async ({ boardId, title, order }, thunkAPI) => {
-  const response = await axios.post(`${API_BASE_URL}/columns`, { boardId, title, order }, getConfig(thunkAPI));
+  const response = await axiosClient.post('/columns', { boardId, title, order });
   return response.data;
 });
 
 export const deleteColumn = createAsyncThunk('boards/deleteColumn', async ({ columnId }, thunkAPI) => {
-  const response = await axios.delete(`${API_BASE_URL}/columns/${columnId}`, getConfig(thunkAPI));
+  const response = await axiosClient.delete(`/columns/${columnId}`);
   return { columnId };
 });
 
 export const createBoard = createAsyncThunk('boards/createBoard', async ({ title, description, urgency, deadline, collaborationMode }, thunkAPI) => {
-  const response = await axios.post(`${API_BASE_URL}/boards`, { title, description, urgency, deadline, collaborationMode }, getConfig(thunkAPI));
+  const response = await axiosClient.post('/boards', { title, description, urgency, deadline, collaborationMode });
   return response.data;
 });
 
 export const deleteBoard = createAsyncThunk('boards/deleteBoard', async (boardId, thunkAPI) => {
-  await axios.delete(`${API_BASE_URL}/boards/${boardId}`, getConfig(thunkAPI));
+  await axiosClient.delete(`/boards/${boardId}`);
   return boardId;
 });
 
