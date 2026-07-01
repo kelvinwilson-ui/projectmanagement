@@ -204,7 +204,7 @@ const Dashboard = () => {
         )}
       </div>
       
-      {status === 'succeeded' && list.length === 0 && (
+      {status === 'succeeded' && list.length === 0 && !showModal && (
         <div style={{
           position: 'fixed',
           inset: 0,
@@ -283,6 +283,22 @@ const Dashboard = () => {
                     Close
                   </button>
                 )
+              ) : canCreateProject ? (
+                <button
+                  type="button"
+                  onClick={() => setShowModal(true)}
+                  style={{
+                    padding: '10px 18px',
+                    borderRadius: '999px',
+                    border: 'none',
+                    background: '#0079bf',
+                    color: 'white',
+                    fontWeight: 800,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Create Project
+                </button>
               ) : (
                 <button
                   type="button"
