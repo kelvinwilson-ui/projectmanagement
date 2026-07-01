@@ -143,12 +143,16 @@ router.post('/login', async (req, res) => {
 router.post('/refresh', async (req, res) => {
   try {
     const token = req.cookies?.refreshToken || req.body?.refreshToken;
-    if (!token) return res.status(401).json({ message: 'No refresh token provided' });
+    if (!token) {
+      console.warn('[auth.refresh] No refresh token provided. cookies:', Object.keys(req.cookies || {}));
+      return res.status(401).json({ message: 'No refresh token provided' });
+    }
 
     let payload;
     try {
       payload = verifyRefreshToken(token);
     } catch (err) {
+      console.warn('[auth.refresh] verifyRefreshToken failed:', err && err.message ? err.message : err);
       return res.status(401).json({ message: 'Invalid refresh token' });
     }
 
@@ -157,6 +161,7 @@ router.post('/refresh', async (req, res) => {
 
     // ensure token exists in user's stored refresh tokens
     if (!user.refreshTokens || !user.refreshTokens.includes(token)) {
+      console.warn('[auth.refresh] refresh token not found in user record for userId=', String(user._id));
       return res.status(401).json({ message: 'Refresh token not recognized' });
     }
 
@@ -175,6 +180,7 @@ router.post('/refresh', async (req, res) => {
       maxAge: 1000 * 60 * 60 * 24 * 7,
     };
     res.cookie('refreshToken', newRefresh, cookieOptions);
+    console.info('[auth.refresh] issued new access token for userId=', String(user._id));
     return res.json({ token: newAccess });
   } catch (err) {
     return res.status(500).json({ message: err.message });

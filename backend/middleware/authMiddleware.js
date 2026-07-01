@@ -11,11 +11,13 @@ export const protect = async (req, res, next) => {
       req.user = await User.findById(decoded.id).select('-password');
       return next();
     } catch (error) {
+      console.warn('[auth.protect] token verification failed:', error && error.message ? error.message : error);
       return res.status(401).json({ message: 'Not authorized, token failed' });
     }
   }
 
   if (!token) {
+    console.warn('[auth.protect] No Bearer token present in Authorization header');
     return res.status(401).json({ message: 'Not authorized, no token' });
   }
 };
